@@ -29,7 +29,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
+import com.example.bot.spring.amazon.model.Asin;
 import com.example.bot.spring.amazon.model.Offer;
+import com.example.bot.spring.amazon.model.OrderConfirmation;
 import com.example.bot.spring.amazon.search.SearchClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -72,7 +74,6 @@ import com.linecorp.bot.model.message.imagemap.ImagemapBaseSize;
 import com.linecorp.bot.model.message.imagemap.MessageImagemapAction;
 import com.linecorp.bot.model.message.imagemap.URIImagemapAction;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
-import com.linecorp.bot.model.message.template.CarouselTemplate;
 import com.linecorp.bot.model.message.template.ConfirmTemplate;
 import com.linecorp.bot.model.response.BotApiResponse;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
@@ -292,6 +293,14 @@ public class KitchenSinkController {
                 this.reply(replyToken, templateMessage);
                 break;
             }
+            case "Buy it!": {
+                String keyword = "TIDE";
+                Asin asin = searchClient.search(keyword).get(0);
+                OrderConfirmation orderConfirmation = new OrderConfirmation(asin);
+                TemplateMessage templateMessage = new TemplateMessage("Button alt text", orderConfirmation.generateTemplate(keyword));
+                this.reply(replyToken, templateMessage);
+                break;
+            }
             case "buttons": {
                 String imageUrl = createUri("/static/buttons/1040.jpg");
                 ButtonsTemplate buttonsTemplate = new ButtonsTemplate(
@@ -316,8 +325,7 @@ public class KitchenSinkController {
             case "carousel": {
                 String keyword = "TIDE";
                 Offer offer = new Offer(searchClient.search(keyword));
-                CarouselTemplate carouselTemplate = new CarouselTemplate( offer.generateCarouselTemplate(keyword) );
-                TemplateMessage templateMessage = new TemplateMessage("Carousel alt text", carouselTemplate);
+                TemplateMessage templateMessage = new TemplateMessage("Carousel alt text", offer.generateTemplate(keyword));
                 this.reply(replyToken, templateMessage);
                 break;
             }

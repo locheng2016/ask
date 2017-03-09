@@ -1,18 +1,15 @@
 package com.example.bot.spring.amazon.model;
 
-import com.example.bot.spring.amazon.model.Asin;
+import com.linecorp.bot.model.action.MessageAction;
 import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.message.template.CarouselColumn;
+import com.linecorp.bot.model.message.template.CarouselTemplate;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created by locheng on 3/9/17.
- *
- */
 @Slf4j
 public class Offer {
 
@@ -22,16 +19,17 @@ public class Offer {
         this.asins = asins;
     }
 
-    public List<CarouselColumn> generateCarouselTemplate(String keyword) {
-        return asins.stream().map(
-                asin -> new CarouselColumn(
-                        asin.getPreviewImageUrl(),
-                        asin.getTitle(),
-                        "        ",
-                        Arrays.asList(
-                                new URIAction("BUY", asin.getLink()),
-                                new URIAction( "MORE LIKE THIS", createSearchUrl(keyword)))))
-                .collect(Collectors.toList());
+    public CarouselTemplate generateTemplate(String keyword) {
+        return new CarouselTemplate(
+                asins.stream().map(
+                        asin -> new CarouselColumn(
+                                asin.getPreviewImageUrl(),
+                                asin.getTitle(),
+                                "        ",
+                                Arrays.asList(
+                                        new MessageAction("BUY","Buy it!"),
+                                        new URIAction( "MORE LIKE THIS", createSearchUrl(keyword)))))
+                .collect(Collectors.toList()));
     }
 
     private String createSearchUrl(String url) {
