@@ -1,6 +1,6 @@
 package com.example.bot.spring.amazon.render;
 
-import com.example.bot.spring.amazon.model.Asin;
+import com.example.bot.spring.amazon.model.ProductData;
 import com.linecorp.bot.model.action.MessageAction;
 import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.message.template.CarouselColumn;
@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Offer {
 
-    private List<Asin> asins;
+    private List<ProductData> asins;
 
-    public Offer(List<Asin> asins) {
+    public Offer(List<ProductData> asins) {
         this.asins = asins;
     }
 

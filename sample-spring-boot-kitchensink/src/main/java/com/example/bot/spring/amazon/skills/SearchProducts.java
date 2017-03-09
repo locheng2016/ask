@@ -1,7 +1,7 @@
 package com.example.bot.spring.amazon.skills;
 
 import com.example.bot.spring.amazon.BotSkill;
-import com.example.bot.spring.amazon.model.Asin;
+import com.example.bot.spring.amazon.model.ProductData;
 import com.example.bot.spring.amazon.model.BotSkillRequest;
 import com.example.bot.spring.amazon.model.BotSkillResponse;
 import com.example.bot.spring.amazon.model.ResponseType;
@@ -17,7 +17,7 @@ public class SearchProducts implements BotSkill {
 
     public BotSkillResponse execute(BotSkillRequest request) {
 
-        List<Asin> productList = searchClient.search(request.getRequestMessage());
+        List<ProductData> productList = searchClient.search(request.getRequestMessage());
 
         if (productList.isEmpty()) {
             return buildResponseProductNotFound();
@@ -33,7 +33,7 @@ public class SearchProducts implements BotSkill {
                 .build();
     }
 
-    private BotSkillResponse buildResponseWithProductList(List<Asin> productList) {
+    private BotSkillResponse buildResponseWithProductList(List<ProductData> productList) {
         return BotSkillResponse.builder()
                 .responseType(ResponseType.ASIN)
                 .responseText(PRODUCT_FOUND)

@@ -5,7 +5,8 @@ import lombok.Value;
 
 @Builder
 @Value
-public class Asin {
+public class ProductData {
+    private String asin;
     private String title;
     private String link;
     private String imageUrl;
