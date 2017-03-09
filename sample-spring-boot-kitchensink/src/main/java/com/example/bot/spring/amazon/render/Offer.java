@@ -1,5 +1,6 @@
-package com.example.bot.spring.amazon.model;
+package com.example.bot.spring.amazon.render;
 
+import com.example.bot.spring.amazon.model.Asin;
 import com.linecorp.bot.model.action.MessageAction;
 import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.message.template.CarouselColumn;

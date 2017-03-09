@@ -14,5 +14,6 @@ public class BotSkillResponse {
     private ResponseType responseType;
 
     private String responseText;
+    private String customerKeyword;
     private List<Asin> productList;
 }

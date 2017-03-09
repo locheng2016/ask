@@ -29,9 +29,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-import com.example.bot.spring.amazon.model.Asin;
-import com.example.bot.spring.amazon.model.Offer;
-import com.example.bot.spring.amazon.model.OrderConfirmation;
+import com.example.bot.spring.amazon.model.BotSkillResponse;
+import com.example.bot.spring.amazon.model.ResponseType;
+import com.example.bot.spring.amazon.render.RenderClient;
 import com.example.bot.spring.amazon.search.SearchClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -91,6 +91,9 @@ public class KitchenSinkController {
 
     @Autowired
     private SearchClient searchClient;
+
+    @Autowired
+    private RenderClient renderClient;
    
     private String csUserId, csToken;
     private String sosUserId, sosToken;
@@ -272,7 +275,7 @@ public class KitchenSinkController {
             return;
         }
 
-        switch (text) {
+        switch (text.toLowerCase()) {
             case "profile": {
                 String userId = event.getSource().getUserId();
                 if (userId != null) {
@@ -322,12 +325,24 @@ public class KitchenSinkController {
                 this.reply(replyToken, templateMessage);
                 break;
             }
-            case "Buy it!": {
+            case "buy it!": {
                 String keyword = "TIDE";
-                Asin asin = searchClient.search(keyword).get(0);
-                OrderConfirmation orderConfirmation = new OrderConfirmation(asin);
-                TemplateMessage templateMessage = new TemplateMessage("Button alt text", orderConfirmation.generateTemplate(keyword));
-                this.reply(replyToken, templateMessage);
+                BotSkillResponse response = BotSkillResponse.builder()
+                        .responseType(ResponseType.ORDER_CONFIRMATION)
+                        .customerKeyword(keyword)
+                        .productList(searchClient.search(keyword))
+                        .build();
+                this.reply(replyToken, renderClient.renderMessage(response));
+                break;
+            }
+            case "beer": {
+                String keyword = "TIDE";
+                BotSkillResponse response = BotSkillResponse.builder()
+                        .responseType(ResponseType.OFFER)
+                        .customerKeyword(keyword)
+                        .productList(searchClient.search(keyword))
+                        .build();
+                this.reply(replyToken, renderClient.renderMessage(response));
                 break;
             }
             case "buttons": {
@@ -348,13 +363,6 @@ public class KitchenSinkController {
                                                   "Rice=米")
                         ));
                 TemplateMessage templateMessage = new TemplateMessage("Button alt text", buttonsTemplate);
-                this.reply(replyToken, templateMessage);
-                break;
-            }
-            case "carousel": {
-                String keyword = "TIDE";
-                Offer offer = new Offer(searchClient.search(keyword));
-                TemplateMessage templateMessage = new TemplateMessage("Carousel alt text", offer.generateTemplate(keyword));
                 this.reply(replyToken, templateMessage);
                 break;
             }

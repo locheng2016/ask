@@ -6,5 +6,7 @@ package com.example.bot.spring.amazon.model;
 public enum ResponseType {
     DEFAULT,
     TEXT,
-    ASIN
+    ASIN,
+    OFFER,
+    ORDER_CONFIRMATION,
 }
