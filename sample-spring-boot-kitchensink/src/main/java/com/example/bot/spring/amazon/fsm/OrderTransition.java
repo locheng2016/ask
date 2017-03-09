@@ -4,16 +4,13 @@ import com.example.bot.spring.amazon.bot.Conversation;
 import com.example.bot.spring.amazon.dao.AsinHistoryDao;
 import com.example.bot.spring.amazon.dao.DashDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.statefulj.fsm.RetryException;
 import org.statefulj.fsm.model.StateActionPair;
 import org.statefulj.fsm.model.Transition;
 
 import java.util.Objects;
-
-import static com.example.bot.spring.amazon.fsm.StateConstant.GO_TO_BUY;
-import static com.example.bot.spring.amazon.fsm.StateConstant.GO_TO_HELLO;
-import static com.example.bot.spring.amazon.fsm.StateConstant.GO_TO_INIT;
 
 @Component
 public class OrderTransition implements Transition<Conversation> {
@@ -23,16 +20,28 @@ public class OrderTransition implements Transition<Conversation> {
     @Autowired
     private DashDao dashDao;
 
+    @Autowired
+    @Qualifier("goToHello")
+    private StateActionPair<Conversation> goToHello;
+
+    @Autowired
+    @Qualifier("goToBuy")
+    private StateActionPair<Conversation> goToBuy;
+
+    @Autowired
+    @Qualifier("goToInit")
+    private StateActionPair<Conversation> goToInit;
+
     @Override
     public StateActionPair<Conversation> getStateActionPair(Conversation c, String event, Object... args) throws RetryException {
-        String input = c.getLastInput();
+        String input = c.getLastInput().getText();
         if (Objects.equals(input, "add to dash")) {
             addLastAsinToDash();
-            return GO_TO_HELLO;
+            return goToHello;
         } else if (Objects.equals(input, "buy something else")) {
-            return GO_TO_BUY;
+            return goToBuy;
         } else {
-            return GO_TO_INIT;
+            return goToInit;
         }
     }
 
