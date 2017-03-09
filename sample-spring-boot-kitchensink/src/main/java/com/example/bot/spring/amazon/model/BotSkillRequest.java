@@ -7,5 +7,5 @@ import lombok.Value;
 @Value
 public class BotSkillRequest {
     private String currentState;
-    private String requestString;
+    private String requestMessage;
 }
