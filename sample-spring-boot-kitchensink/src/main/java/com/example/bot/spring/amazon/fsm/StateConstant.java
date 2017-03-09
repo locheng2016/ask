@@ -18,7 +18,7 @@ class StateConstant {
     static final List<State<Conversation>> ALL = ImmutableList.of(INIT, HELLO, BUY, ORDER);
 
     static final StateActionPair<Conversation> GO_TO_INIT = new StateActionPairImpl<>(INIT, null);
-    static final StateActionPair<Conversation> GO_TO_HELLO = new StateActionPairImpl<>(HELLO, null);
+    static final StateActionPair<Conversation> GO_TO_HELLO = new StateActionPairImpl<>(HELLO, new HelloAction());
     static final StateActionPair<Conversation> GO_TO_BUY = new StateActionPairImpl<>(BUY, null);
     static final StateActionPair<Conversation> GO_TO_ORDER = new StateActionPairImpl<>(ORDER, null);
 }
