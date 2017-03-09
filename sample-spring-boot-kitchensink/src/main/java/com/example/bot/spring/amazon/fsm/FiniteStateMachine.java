@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 public class FiniteStateMachine {
     @SneakyThrows
-    public static void main(String[] args) {
+    public static void run() {
         BotState.INIT.addTransition("userInput", new InitTransition());
         BotState.HELLO.addTransition("userInput", new BuyTransition());
         BotState.BUY.addTransition("userInput", new BuyTransition());
