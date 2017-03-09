@@ -91,6 +91,9 @@ public class KitchenSinkController {
 
     @Autowired
     private SearchClient searchClient;
+   
+    private String csUserId, csToken;
+    private String sosUserId, sosToken;
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
@@ -244,6 +247,31 @@ public class KitchenSinkController {
         String text = content.getText();
 
         log.info("Got text message from {}: {}", replyToken, text);
+
+        if (handleCSTextContent(replyToken, event, content)) {
+            return;
+        }
+        else if (text.equalsIgnoreCase("Hi Amazon")) {
+            String imageUrl = createUri("/static/buttons/1024.jpg");
+            ButtonsTemplate buttonsTemplate = new ButtonsTemplate(
+                    imageUrl,
+                    "Hi Amazon",
+                    "What can I help you with?",
+                    Arrays.asList(
+                            new MessageAction("Want to buy?",
+                                    "buy"),
+                            new MessageAction("My Dash Buttons",
+                                    "my dash"),
+                            new MessageAction("My Orders",
+                                    "my orders"),
+                            new MessageAction("What is Prime?",
+                                    "prime")
+                    ));
+            TemplateMessage templateMessage = new TemplateMessage("Hi Amazon!", buttonsTemplate);
+            this.reply(replyToken, templateMessage);
+            return;
+        }
+
         switch (text) {
             case "profile": {
                 String userId = event.getSource().getUserId();
@@ -261,7 +289,8 @@ public class KitchenSinkController {
                                         Arrays.asList(new TextMessage(
                                                               "Display name: " + profile.getDisplayName()),
                                                       new TextMessage("Status message: "
-                                                                      + profile.getStatusMessage()))
+                                                                      + profile.getStatusMessage()),
+                                                      new TextMessage("User Id: " + userId))
                                 );
 
                             });
@@ -412,6 +441,47 @@ public class KitchenSinkController {
         return new DownloadedContent(
                 tempFile,
                 createUri("/downloaded/" + tempFile.getFileName()));
+    }
+
+    private boolean handleCSTextContent(String replyToken, Event event, TextMessageContent content) {
+        String text = content.getText();
+        log.info("Handle CS Text Content {}: {}", replyToken, text);
+
+        // Please keep in mind that the replytoken can only be used once so we need to update the token for each message.
+        if (csUserId != null && sosUserId != null) {
+            if (text.equalsIgnoreCase("seeu")) {
+                csUserId = null;
+                csToken = null;
+                sosUserId = null;
+                sosToken = null;
+            }
+            else if (csUserId.equalsIgnoreCase(event.getSource().getUserId())) {
+                csToken = replyToken;
+                this.replyText(sosToken, text);
+            }
+            else if (sosUserId.equalsIgnoreCase(event.getSource().getUserId())) {
+                sosToken = replyToken;
+                this.replyText(csToken, text);
+            }
+            return true;
+        }
+
+        if (csUserId == null && text.equalsIgnoreCase("cs")) {
+            csUserId = event.getSource().getUserId();
+            csToken  = replyToken;
+
+            this.replyText(csToken, "Thanks for your kindness to provide help!");
+            return true;
+        }
+        else if (sosUserId == null && text.equalsIgnoreCase("sos")) {
+            sosUserId = event.getSource().getUserId();
+            sosToken = replyToken;
+
+            this.replyText(sosToken, "What can I help you with?");
+            return true;
+        }
+
+        return false;
     }
 
     @Value

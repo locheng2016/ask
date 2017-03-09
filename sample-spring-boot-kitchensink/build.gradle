@@ -17,5 +17,6 @@
 apply plugin: 'org.springframework.boot'
 
 dependencies {
+    compile 'org.statefulj:statefulj-fsm:+'
     compile project(':line-bot-spring-boot')
 }

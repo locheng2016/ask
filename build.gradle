@@ -100,7 +100,7 @@ subprojects {
 
         compileOnly "org.springframework.boot:spring-boot-configuration-processor" // http://docs.spring.io/spring-boot/docs/current/reference/html/configuration-metadata.html#configuration-metadata-annotation-processor
 
-        compile 'org.statefulj.framework:statefulj-framework-core:+'
+        compile 'org.statefulj:statefulj-fsm:+'
 
         testCompile 'com.google.guava:guava'
         testCompile 'com.github.stefanbirkner:system-rules'
