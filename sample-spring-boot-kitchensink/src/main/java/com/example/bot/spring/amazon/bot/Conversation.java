@@ -1,6 +1,6 @@
 package com.example.bot.spring.amazon.bot;
 
-import com.example.bot.spring.amazon.model.BotSkillResponse;
+import com.example.bot.spring.amazon.model.BotActionResponse;
 import lombok.Data;
 import lombok.NonNull;
 import org.statefulj.persistence.annotations.State;
@@ -13,13 +13,13 @@ public class Conversation {
     @State
     private String state;
     private List<String> history = new ArrayList<>();
-    private List<BotSkillResponse> responseHistory = new ArrayList<>();
+    private List<BotActionResponse> responseHistory = new ArrayList<>();
 
     public void addInput(@NonNull String input) {
         history.add(input);
     }
 
-    public void addResponse(@NonNull BotSkillResponse response) {
+    public void addResponse(@NonNull BotActionResponse response) {
         responseHistory.add(response);
     }
 
@@ -27,7 +27,7 @@ public class Conversation {
         return history.get(history.size() - 1);
     }
 
-    public BotSkillResponse getLastResponse() {
+    public BotActionResponse getLastResponse() {
         return responseHistory.get(responseHistory.size() - 1);
     }
 }

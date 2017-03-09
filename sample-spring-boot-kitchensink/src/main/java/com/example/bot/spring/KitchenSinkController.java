@@ -29,7 +29,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-import com.example.bot.spring.amazon.model.BotSkillResponse;
+import com.example.bot.spring.amazon.model.BotActionResponse;
 import com.example.bot.spring.amazon.model.ResponseType;
 import com.example.bot.spring.amazon.render.RenderClient;
 import com.example.bot.spring.amazon.search.SearchClient;
@@ -314,7 +314,7 @@ public class KitchenSinkController {
             }
             case "buy it!": {
                 String keyword = "TIDE";
-                BotSkillResponse response = BotSkillResponse.builder()
+                BotActionResponse response = BotActionResponse.builder()
                         .responseType(ResponseType.ORDER_CONFIRMATION)
                         .customerKeyword(keyword)
                         .productList(searchClient.search(keyword))
@@ -324,7 +324,7 @@ public class KitchenSinkController {
             }
             case "beer": {
                 String keyword = "TIDE";
-                BotSkillResponse response = BotSkillResponse.builder()
+                BotActionResponse response = BotActionResponse.builder()
                         .responseType(ResponseType.OFFER)
                         .customerKeyword(keyword)
                         .productList(searchClient.search(keyword))
