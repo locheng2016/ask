@@ -31,16 +31,14 @@ public class BuyTransition implements Transition<Conversation> {
 
         if (isAsin(c.getLastInput())) {
             response = makeOrder.execute(request);
-
-            // TODO: save the response some where for render user message
+            c.addResponse(response);
 
             return GO_TO_ORDER;
         } else {
 
             // call search product skill to get list of ASINs
             response = searchProducts.execute(request);
-
-            // TODO: save the response some where for render user message
+            c.addResponse(response);
 
             return GO_TO_BUY;
         }
