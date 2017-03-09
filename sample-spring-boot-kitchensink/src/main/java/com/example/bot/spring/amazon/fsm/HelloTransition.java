@@ -8,8 +8,6 @@ import org.statefulj.fsm.RetryException;
 import org.statefulj.fsm.model.StateActionPair;
 import org.statefulj.fsm.model.Transition;
 
-import java.util.Objects;
-
 @Component
 public class HelloTransition implements Transition<Conversation> {
     @Autowired
@@ -22,7 +20,7 @@ public class HelloTransition implements Transition<Conversation> {
 
     @Override
     public StateActionPair<Conversation> getStateActionPair(Conversation c, String event, Object... args) throws RetryException {
-        if (Objects.equals(c.getLastInput(), "I want to buy")) {
+        if (c.getLastInput().getText().equals("I want to buy")) {
             return goToBuy;
         } else {
             return goToHello;
