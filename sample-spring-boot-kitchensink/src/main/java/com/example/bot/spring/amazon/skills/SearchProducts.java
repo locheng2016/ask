@@ -12,7 +12,8 @@ import java.util.List;
 public class SearchProducts implements BotSkill {
 
     private static final SearchClient searchClient = new SearchClient();
-    private static final String PRODUCT_NOT_FOUND = "We didn't find any product you want.";
+    private static final String PRODUCT_FOUND = "I found these:";
+    private static final String PRODUCT_NOT_FOUND = "I found find any product you want.";
 
     public BotSkillResponse execute(BotSkillRequest request) {
 
@@ -35,6 +36,7 @@ public class SearchProducts implements BotSkill {
     private BotSkillResponse buildResponseWithProductList(List<Asin> productList) {
         return BotSkillResponse.builder()
                 .responseType(ResponseType.ASIN)
+                .responseText(PRODUCT_FOUND)
                 .productList(productList)
                 .build();
     }
