@@ -8,8 +8,6 @@ import org.statefulj.fsm.RetryException;
 import org.statefulj.fsm.model.StateActionPair;
 import org.statefulj.fsm.model.Transition;
 
-import java.util.Objects;
-
 @Component
 public class InitTransition implements Transition<Conversation> {
     @Autowired
