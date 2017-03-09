@@ -429,6 +429,7 @@ public class KitchenSinkController {
         String text = content.getText();
         log.info("Handle CS Text Content {}: {}", replyToken, text);
 
+        // Please keep in mind that the replytoken can only be used once so we need to update the token for each message.
         if (csUserId != null && sosUserId != null) {
             if (text.equalsIgnoreCase("seeu")) {
                 csUserId = null;
@@ -437,9 +438,11 @@ public class KitchenSinkController {
                 sosToken = null;
             }
             else if (csUserId.equalsIgnoreCase(event.getSource().getUserId())) {
+                csToken = replyToken;
                 this.replyText(sosToken, text);
             }
             else if (sosUserId.equalsIgnoreCase(event.getSource().getUserId())) {
+                sosToken = replyToken;
                 this.replyText(csToken, text);
             }
             return true;
