@@ -26,11 +26,13 @@ public class FiniteStateMachine {
     public FiniteStateMachine(
             InitTransition initTransition,
             HelloTransition helloTransition,
-            BuyTransition buyTransition) {
+            BuyTransition buyTransition,
+            OrderTransition orderTransition
+    ) {
         INIT.addTransition(USER_INPUT_EVENT, initTransition);
         HELLO.addTransition(USER_INPUT_EVENT, helloTransition);
         BUY.addTransition(USER_INPUT_EVENT, buyTransition);
-        ORDER.addTransition(USER_INPUT_EVENT, INIT); // deterministic
+        ORDER.addTransition(USER_INPUT_EVENT, orderTransition);
         fsm = new FSM<>("FSM", PERSISTER);
     }
 
