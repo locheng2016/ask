@@ -9,4 +9,5 @@ public enum ResponseType {
     ASIN,
     OFFER,
     ORDER_CONFIRMATION,
+    HI_AMAZON,
 }

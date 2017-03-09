@@ -21,6 +21,11 @@ public class RenderClient {
                 return new TemplateMessage("Button alt text",
                         new OrderConfirmation(response.getProductList().get(0)).generateTemplate(response.getCustomerKeyword()));
             }
+            case HI_AMAZON: {
+                return new TemplateMessage("Hi Amazon!",
+                        new HiAmazon().generateTemplate());
+
+            }
         }
         return null; //TODO: defulat Template
     }

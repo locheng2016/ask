@@ -255,23 +255,10 @@ public class KitchenSinkController {
             return;
         }
         else if (text.equalsIgnoreCase("Hi Amazon")) {
-            String imageUrl = createUri("/static/buttons/1024.jpg");
-            ButtonsTemplate buttonsTemplate = new ButtonsTemplate(
-                    imageUrl,
-                    "Hi Amazon",
-                    "What can I help you with?",
-                    Arrays.asList(
-                            new MessageAction("Want to buy?",
-                                    "buy"),
-                            new MessageAction("My Dash Buttons",
-                                    "my dash"),
-                            new MessageAction("My Orders",
-                                    "my orders"),
-                            new MessageAction("What is Prime?",
-                                    "prime")
-                    ));
-            TemplateMessage templateMessage = new TemplateMessage("Hi Amazon!", buttonsTemplate);
-            this.reply(replyToken, templateMessage);
+            BotSkillResponse response = BotSkillResponse.builder()
+                    .responseType(ResponseType.HI_AMAZON)
+                    .build();
+            this.reply(replyToken, renderClient.renderMessage(response));
             return;
         }
 
