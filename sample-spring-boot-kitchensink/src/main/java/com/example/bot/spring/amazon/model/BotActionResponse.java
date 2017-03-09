@@ -7,7 +7,7 @@ import java.util.List;
 
 @Builder
 @Value
-public class BotSkillResponse {
+public class BotActionResponse {
     private ResponseType responseType;
     private String responseText;
     private String customerKeyword;
