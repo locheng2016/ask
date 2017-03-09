@@ -3,6 +3,8 @@ package com.example.bot.spring.amazon.fsm;
 import com.example.bot.spring.amazon.bot.BotInput;
 import com.example.bot.spring.amazon.bot.Conversation;
 import com.example.bot.spring.amazon.fsm.action.SearchProductAction;
+import com.example.bot.spring.amazon.model.BotActionResponse;
+import com.example.bot.spring.amazon.model.ResponseType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -31,6 +33,10 @@ public class BuyTransition implements Transition<Conversation> {
             throws RetryException {
         BotInput input = c.getLastInput();
         if (wannaBuy(input)) {
+            c.addResponse(BotActionResponse.builder()
+                    .responseText("What do you want to buy?")
+                    .responseType(ResponseType.TEXT)
+                    .build());
             return goToOrder;
         } else {
             searchProductAction.execute(c, event);
