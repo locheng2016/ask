@@ -22,7 +22,7 @@ public class InitTransition implements Transition<Conversation> {
 
     @Override
     public StateActionPair<Conversation> getStateActionPair(Conversation c, String event, Object... args) throws RetryException {
-        if (c.getLastInput().getText().equals("hello"))) {
+        if (c.getLastInput().getText().equals("hello")) {
             return goToHello;
         } else {
             return goToInit;
