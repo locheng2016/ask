@@ -29,6 +29,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
+import com.example.bot.spring.amazon.model.Offer;
+import com.example.bot.spring.amazon.search.SearchClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -70,7 +72,6 @@ import com.linecorp.bot.model.message.imagemap.ImagemapBaseSize;
 import com.linecorp.bot.model.message.imagemap.MessageImagemapAction;
 import com.linecorp.bot.model.message.imagemap.URIImagemapAction;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
-import com.linecorp.bot.model.message.template.CarouselColumn;
 import com.linecorp.bot.model.message.template.CarouselTemplate;
 import com.linecorp.bot.model.message.template.ConfirmTemplate;
 import com.linecorp.bot.model.response.BotApiResponse;
@@ -86,6 +87,9 @@ import lombok.extern.slf4j.Slf4j;
 public class KitchenSinkController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
+
+    @Autowired
+    private SearchClient searchClient;
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
@@ -310,23 +314,9 @@ public class KitchenSinkController {
                 break;
             }
             case "carousel": {
-                String imageUrl = createUri("/static/buttons/1040.jpg");
-                CarouselTemplate carouselTemplate = new CarouselTemplate(
-                        Arrays.asList(
-                                new CarouselColumn(imageUrl, "hoge", "fuga", Arrays.asList(
-                                        new URIAction("Go to line.me",
-                                                      "https://line.me"),
-                                        new PostbackAction("Say hello1",
-                                                           "hello こんにちは")
-                                )),
-                                new CarouselColumn(imageUrl, "hoge", "fuga", Arrays.asList(
-                                        new PostbackAction("言 hello2",
-                                                           "hello こんにちは",
-                                                           "hello こんにちは"),
-                                        new MessageAction("Say message",
-                                                          "Rice=米")
-                                ))
-                        ));
+                String keyword = "TIDE";
+                Offer offer = new Offer(searchClient.search(keyword));
+                CarouselTemplate carouselTemplate = new CarouselTemplate( offer.generateCarouselTemplate(keyword) );
                 TemplateMessage templateMessage = new TemplateMessage("Carousel alt text", carouselTemplate);
                 this.reply(replyToken, templateMessage);
                 break;
