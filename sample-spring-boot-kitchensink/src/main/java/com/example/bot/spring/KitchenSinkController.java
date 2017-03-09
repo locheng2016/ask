@@ -29,6 +29,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
+import com.example.bot.spring.amazon.bot.BotInput;
+import com.example.bot.spring.amazon.fsm.FiniteStateMachine;
 import com.example.bot.spring.amazon.model.BotActionResponse;
 import com.example.bot.spring.amazon.model.ResponseType;
 import com.example.bot.spring.amazon.product.ProductDataClient;
@@ -84,6 +86,8 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.example.bot.spring.amazon.Constant.CONVERSATION;
+
 @Slf4j
 @LineMessageHandler
 public class KitchenSinkController {
@@ -98,6 +102,9 @@ public class KitchenSinkController {
 
     @Autowired
     private ProductDataClient productDataClient;
+
+    @Autowired
+    private FiniteStateMachine fsm;
    
     private String csUserId, csToken;
     private String sosUserId, sosToken;
@@ -249,6 +256,22 @@ public class KitchenSinkController {
         );
     }
 
+    private BotInput parseCustomerInput(String text) {
+        if (text.toLowerCase().startsWith("buy")) {
+            String asin = text.substring(4);
+            if (productDataClient.validAsin(asin)) {
+                return BotInput.builder()
+                        .type(BotInput.InputType.BUY)
+                        .asin(asin)
+                        .build();
+            }
+        }
+        return BotInput.builder()
+                .type(BotInput.InputType.TEXT)
+                .text(text)
+                .build();
+    }
+
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
         String text = content.getText();
@@ -258,160 +281,167 @@ public class KitchenSinkController {
         if (handleCSTextContent(replyToken, event, content)) {
             return;
         }
-        else if (text.equalsIgnoreCase("Hi Amazon")) {
-            BotSkillResponse response = BotSkillResponse.builder()
-                    .responseType(ResponseType.HI_AMAZON)
-                    .build();
-            this.reply(replyToken, renderClient.renderMessage(response));
-            return;
-        }
 
-        if (text.toLowerCase().startsWith("buy")) {
-            String asin = text.substring(4);
-            if (productDataClient.validAsin(asin)) {
-                String keyword = "TIDE";
-                BotSkillResponse response = BotSkillResponse.builder()
-                        .responseType(ResponseType.ORDER_CONFIRMATION)
-                        .customerKeyword(keyword)
-                        .productList(Arrays.asList(productDataClient.getProduct(asin)))
-                        .build();
-                this.reply(replyToken, renderClient.renderMessage(response));
-                return;
-            }
-        }
+        BotInput input = parseCustomerInput(text);
+        CONVERSATION.addInput(input);
+        fsm.handleUserInput(CONVERSATION);
+        BotActionResponse response = CONVERSATION.getLastResponse();
+        this.reply(replyToken, renderClient.renderMessage(response));
 
-        switch (text.toLowerCase()) {
-            case "profile": {
-                String userId = event.getSource().getUserId();
-                if (userId != null) {
-                    lineMessagingClient
-                            .getProfile(userId)
-                            .whenComplete((profile, throwable) -> {
-                                if (throwable != null) {
-                                    this.replyText(replyToken, throwable.getMessage());
-                                    return;
-                                }
-
-                                this.reply(
-                                        replyToken,
-                                        Arrays.asList(new TextMessage(
-                                                              "Display name: " + profile.getDisplayName()),
-                                                      new TextMessage("Status message: "
-                                                                      + profile.getStatusMessage()),
-                                                      new TextMessage("User Id: " + userId))
-                                );
-
-                            });
-                } else {
-                    this.replyText(replyToken, "Bot can't use profile API without user ID");
-                }
-                break;
-            }
-            case "bye": {
-                Source source = event.getSource();
-                if (source instanceof GroupSource) {
-                    this.replyText(replyToken, "Leaving group");
-                    lineMessagingClient.leaveGroup(((GroupSource) source).getGroupId()).get();
-                } else if (source instanceof RoomSource) {
-                    this.replyText(replyToken, "Leaving room");
-                    lineMessagingClient.leaveRoom(((RoomSource) source).getRoomId()).get();
-                } else {
-                    this.replyText(replyToken, "Bot can't leave from 1:1 chat");
-                }
-                break;
-            }
-            case "confirm": {
-                ConfirmTemplate confirmTemplate = new ConfirmTemplate(
-                        "Do it?",
-                        new MessageAction("Yes", "Yes!"),
-                        new MessageAction("No", "No!")
-                );
-                TemplateMessage templateMessage = new TemplateMessage("Confirm alt text", confirmTemplate);
-                this.reply(replyToken, templateMessage);
-                break;
-            }
-            case "buy it!": {
-                String keyword = "TIDE";
-                BotActionResponse response = BotActionResponse.builder()
-                        .responseType(ResponseType.ORDER_CONFIRMATION)
-                        .customerKeyword(keyword)
-                        .productList(searchClient.search(keyword))
-                        .build();
-                this.reply(replyToken, renderClient.renderMessage(response));
-                break;
-            }
-            case "beer": {
-                String keyword = "TIDE";
-                BotActionResponse response = BotActionResponse.builder()
-                        .responseType(ResponseType.OFFER)
-                        .customerKeyword(keyword)
-                        .productList(searchClient.search(keyword))
-                        .build();
-                this.reply(replyToken, renderClient.renderMessage(response));
-                break;
-            }
-            case "buttons": {
-                String imageUrl = createUri("/static/buttons/1040.jpg");
-                ButtonsTemplate buttonsTemplate = new ButtonsTemplate(
-                        imageUrl,
-                        "My button sample",
-                        "Hello, my button",
-                        Arrays.asList(
-                                new URIAction("Go to line.me",
-                                              "https://line.me"),
-                                new PostbackAction("Say hello1",
-                                                   "hello こんにちは"),
-                                new PostbackAction("言 hello2",
-                                                   "hello こんにちは",
-                                                   "hello こんにちは"),
-                                new MessageAction("Say message",
-                                                  "Rice=米")
-                        ));
-                TemplateMessage templateMessage = new TemplateMessage("Button alt text", buttonsTemplate);
-                this.reply(replyToken, templateMessage);
-                break;
-            }
-            case "imagemap":
-                this.reply(replyToken, new ImagemapMessage(
-                        createUri("/static/rich"),
-                        "This is alt text",
-                        new ImagemapBaseSize(1040, 1040),
-                        Arrays.asList(
-                                new URIImagemapAction(
-                                        "https://store.line.me/family/manga/en",
-                                        new ImagemapArea(
-                                                0, 0, 520, 520
-                                        )
-                                ),
-                                new URIImagemapAction(
-                                        "https://store.line.me/family/music/en",
-                                        new ImagemapArea(
-                                                520, 0, 520, 520
-                                        )
-                                ),
-                                new URIImagemapAction(
-                                        "https://store.line.me/family/play/en",
-                                        new ImagemapArea(
-                                                0, 520, 520, 520
-                                        )
-                                ),
-                                new MessageImagemapAction(
-                                        "URANAI!",
-                                        new ImagemapArea(
-                                                520, 520, 520, 520
-                                        )
-                                )
-                        )
-                ));
-                break;
-            default:
-                log.info("Returns echo message {}: {}", replyToken, text);
-                this.replyText(
-                        replyToken,
-                        text
-                );
-                break;
-        }
+//        if (text.equalsIgnoreCase("Hi Amazon")) {
+//            response = BotActionResponse.builder()
+//                    .responseType(ResponseType.HI_AMAZON)
+//                    .build();
+//            this.reply(replyToken, renderClient.renderMessage(response));
+//            return;
+//        }
+//
+//        if (text.toLowerCase().startsWith("buy")) {
+//            String asin = text.substring(4);
+//            if (productDataClient.validAsin(asin)) {
+//                String keyword = "TIDE";
+//                BotActionResponse response = BotActionResponse.builder()
+//                        .responseType(ResponseType.ORDER_CONFIRMATION)
+//                        .customerKeyword(keyword)
+//                        .productList(Arrays.asList(productDataClient.getProduct(asin)))
+//                        .build();
+//                this.reply(replyToken, renderClient.renderMessage(response));
+//                return;
+//            }
+//        }
+//
+//        switch (text.toLowerCase()) {
+//            case "profile": {
+//                String userId = event.getSource().getUserId();
+//                if (userId != null) {
+//                    lineMessagingClient
+//                            .getProfile(userId)
+//                            .whenComplete((profile, throwable) -> {
+//                                if (throwable != null) {
+//                                    this.replyText(replyToken, throwable.getMessage());
+//                                    return;
+//                                }
+//
+//                                this.reply(
+//                                        replyToken,
+//                                        Arrays.asList(new TextMessage(
+//                                                              "Display name: " + profile.getDisplayName()),
+//                                                      new TextMessage("Status message: "
+//                                                                      + profile.getStatusMessage()),
+//                                                      new TextMessage("User Id: " + userId))
+//                                );
+//
+//                            });
+//                } else {
+//                    this.replyText(replyToken, "Bot can't use profile API without user ID");
+//                }
+//                break;
+//            }
+//            case "bye": {
+//                Source source = event.getSource();
+//                if (source instanceof GroupSource) {
+//                    this.replyText(replyToken, "Leaving group");
+//                    lineMessagingClient.leaveGroup(((GroupSource) source).getGroupId()).get();
+//                } else if (source instanceof RoomSource) {
+//                    this.replyText(replyToken, "Leaving room");
+//                    lineMessagingClient.leaveRoom(((RoomSource) source).getRoomId()).get();
+//                } else {
+//                    this.replyText(replyToken, "Bot can't leave from 1:1 chat");
+//                }
+//                break;
+//            }
+//            case "confirm": {
+//                ConfirmTemplate confirmTemplate = new ConfirmTemplate(
+//                        "Do it?",
+//                        new MessageAction("Yes", "Yes!"),
+//                        new MessageAction("No", "No!")
+//                );
+//                TemplateMessage templateMessage = new TemplateMessage("Confirm alt text", confirmTemplate);
+//                this.reply(replyToken, templateMessage);
+//                break;
+//            }
+//            case "buy it!": {
+//                String keyword = "TIDE";
+//                BotActionResponse response = BotActionResponse.builder()
+//                        .responseType(ResponseType.ORDER_CONFIRMATION)
+//                        .customerKeyword(keyword)
+//                        .productList(searchClient.search(keyword))
+//                        .build();
+//                this.reply(replyToken, renderClient.renderMessage(response));
+//                break;
+//            }
+//            case "beer": {
+//                String keyword = "TIDE";
+//                BotActionResponse response = BotActionResponse.builder()
+//                        .responseType(ResponseType.OFFER)
+//                        .customerKeyword(keyword)
+//                        .productList(searchClient.search(keyword))
+//                        .build();
+//                this.reply(replyToken, renderClient.renderMessage(response));
+//                break;
+//            }
+//            case "buttons": {
+//                String imageUrl = createUri("/static/buttons/1040.jpg");
+//                ButtonsTemplate buttonsTemplate = new ButtonsTemplate(
+//                        imageUrl,
+//                        "My button sample",
+//                        "Hello, my button",
+//                        Arrays.asList(
+//                                new URIAction("Go to line.me",
+//                                              "https://line.me"),
+//                                new PostbackAction("Say hello1",
+//                                                   "hello こんにちは"),
+//                                new PostbackAction("言 hello2",
+//                                                   "hello こんにちは",
+//                                                   "hello こんにちは"),
+//                                new MessageAction("Say message",
+//                                                  "Rice=米")
+//                        ));
+//                TemplateMessage templateMessage = new TemplateMessage("Button alt text", buttonsTemplate);
+//                this.reply(replyToken, templateMessage);
+//                break;
+//            }
+//            case "imagemap":
+//                this.reply(replyToken, new ImagemapMessage(
+//                        createUri("/static/rich"),
+//                        "This is alt text",
+//                        new ImagemapBaseSize(1040, 1040),
+//                        Arrays.asList(
+//                                new URIImagemapAction(
+//                                        "https://store.line.me/family/manga/en",
+//                                        new ImagemapArea(
+//                                                0, 0, 520, 520
+//                                        )
+//                                ),
+//                                new URIImagemapAction(
+//                                        "https://store.line.me/family/music/en",
+//                                        new ImagemapArea(
+//                                                520, 0, 520, 520
+//                                        )
+//                                ),
+//                                new URIImagemapAction(
+//                                        "https://store.line.me/family/play/en",
+//                                        new ImagemapArea(
+//                                                0, 520, 520, 520
+//                                        )
+//                                ),
+//                                new MessageImagemapAction(
+//                                        "URANAI!",
+//                                        new ImagemapArea(
+//                                                520, 520, 520, 520
+//                                        )
+//                                )
+//                        )
+//                ));
+//                break;
+//            default:
+//                log.info("Returns echo message {}: {}", replyToken, text);
+//                this.replyText(
+//                        replyToken,
+//                        text
+//                );
+//                break;
+//        }
     }
 
     private static String createUri(String path) {
