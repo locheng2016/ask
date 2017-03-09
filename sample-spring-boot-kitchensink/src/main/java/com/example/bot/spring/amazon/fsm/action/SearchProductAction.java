@@ -20,7 +20,7 @@ public class SearchProductAction implements Action<Conversation> {
 
     public void execute(Conversation c, String event, Object ... args) throws RetryException {
 
-        final String userMessage = c.getLastInput();
+        final String userMessage = c.getLastInput().getText();
 
         List<ProductData> productList = searchClient.search(userMessage);
 

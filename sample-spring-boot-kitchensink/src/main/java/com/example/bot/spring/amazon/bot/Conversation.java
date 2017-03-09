@@ -12,19 +12,19 @@ import java.util.List;
 public class Conversation {
     @State
     private String state;
-    private List<String> history = new ArrayList<>();
+    private List<BotInput> inputHistory = new ArrayList<>();
     private List<BotActionResponse> responseHistory = new ArrayList<>();
 
-    public void addInput(@NonNull String input) {
-        history.add(input);
+    public void addInput(@NonNull BotInput input) {
+        inputHistory.add(input);
     }
 
     public void addResponse(@NonNull BotActionResponse response) {
         responseHistory.add(response);
     }
 
-    public String getLastInput() {
-        return history.get(history.size() - 1);
+    public BotInput getLastInput() {
+        return inputHistory.get(inputHistory.size() - 1);
     }
 
     public BotActionResponse getLastResponse() {

@@ -34,7 +34,7 @@ public class OrderTransition implements Transition<Conversation> {
 
     @Override
     public StateActionPair<Conversation> getStateActionPair(Conversation c, String event, Object... args) throws RetryException {
-        String input = c.getLastInput();
+        String input = c.getLastInput().getText();
         if (Objects.equals(input, "add to dash")) {
             addLastAsinToDash();
             return goToHello;
