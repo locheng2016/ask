@@ -5,11 +5,13 @@ import com.example.bot.spring.amazon.model.BotActionResponse;
 import com.example.bot.spring.amazon.model.ProductData;
 import com.example.bot.spring.amazon.model.ResponseType;
 import com.example.bot.spring.amazon.search.SearchClient;
+import org.springframework.stereotype.Component;
 import org.statefulj.fsm.RetryException;
 import org.statefulj.fsm.model.Action;
 
 import java.util.List;
 
+@Component
 public class SearchProductAction implements Action<Conversation> {
 
     private static final SearchClient searchClient = new SearchClient();
