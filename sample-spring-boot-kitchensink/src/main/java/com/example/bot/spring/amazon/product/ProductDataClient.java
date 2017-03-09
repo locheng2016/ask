@@ -56,6 +56,10 @@ public class ProductDataClient {
         dataset.forEach(productData -> productDataByAsin.put(productData.getAsin(), productData));
     }
 
+    public boolean validAsin(String asin) {
+        return productDataByAsin.containsKey(asin);
+    }
+
     public ProductData getProduct(String asin) {
         return productDataByAsin.get(asin);
     }

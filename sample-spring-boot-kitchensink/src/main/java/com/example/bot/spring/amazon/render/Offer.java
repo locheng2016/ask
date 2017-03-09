@@ -1,7 +1,7 @@
 package com.example.bot.spring.amazon.render;
 
 import com.example.bot.spring.amazon.model.ProductData;
-import com.linecorp.bot.model.action.MessageAction;
+import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.message.template.CarouselColumn;
 import com.linecorp.bot.model.message.template.CarouselTemplate;
@@ -14,21 +14,21 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Offer {
 
-    private List<ProductData> asins;
+    private List<ProductData> products;
 
-    public Offer(List<ProductData> asins) {
-        this.asins = asins;
+    public Offer(List<ProductData> products) {
+        this.products = products;
     }
 
     public CarouselTemplate generateTemplate(String keyword) {
         return new CarouselTemplate(
-                asins.stream().map(
-                        asin -> new CarouselColumn(
-                                asin.getPreviewImageUrl(),
-                                asin.getTitle(),
+                products.stream().map(
+                        product -> new CarouselColumn(
+                                product.getPreviewImageUrl(),
+                                product.getTitle(),
                                 "        ",
                                 Arrays.asList(
-                                        new MessageAction("BUY","Buy it!"),
+                                        new PostbackAction("BUY","Buy " + product.getAsin(),"Buy it!"),
                                         new URIAction( "MORE LIKE THIS", createSearchUrl(keyword)))))
                 .collect(Collectors.toList()));
     }

@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 
 import com.example.bot.spring.amazon.model.BotSkillResponse;
 import com.example.bot.spring.amazon.model.ResponseType;
+import com.example.bot.spring.amazon.product.ProductDataClient;
 import com.example.bot.spring.amazon.render.RenderClient;
 import com.example.bot.spring.amazon.search.SearchClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +95,9 @@ public class KitchenSinkController {
 
     @Autowired
     private RenderClient renderClient;
+
+    @Autowired
+    private ProductDataClient productDataClient;
    
     private String csUserId, csToken;
     private String sosUserId, sosToken;
@@ -260,6 +264,20 @@ public class KitchenSinkController {
                     .build();
             this.reply(replyToken, renderClient.renderMessage(response));
             return;
+        }
+
+        if (text.toLowerCase().startsWith("buy")) {
+            String asin = text.substring(4);
+            if (productDataClient.validAsin(asin)) {
+                String keyword = "TIDE";
+                BotSkillResponse response = BotSkillResponse.builder()
+                        .responseType(ResponseType.ORDER_CONFIRMATION)
+                        .customerKeyword(keyword)
+                        .productList(Arrays.asList(productDataClient.getProduct(asin)))
+                        .build();
+                this.reply(replyToken, renderClient.renderMessage(response));
+                return;
+            }
         }
 
         switch (text.toLowerCase()) {
