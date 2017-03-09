@@ -5,19 +5,26 @@ import com.example.bot.spring.amazon.model.BotSkillRequest;
 import com.example.bot.spring.amazon.model.BotSkillResponse;
 import com.example.bot.spring.amazon.skills.MakeOrder;
 import com.example.bot.spring.amazon.skills.SearchProducts;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.statefulj.fsm.RetryException;
 import org.statefulj.fsm.model.StateActionPair;
 import org.statefulj.fsm.model.Transition;
-
-import static com.example.bot.spring.amazon.fsm.StateConstant.GO_TO_BUY;
-import static com.example.bot.spring.amazon.fsm.StateConstant.GO_TO_ORDER;
 
 @Component
 public class BuyTransition implements Transition<Conversation> {
 
     private SearchProducts searchProducts = new SearchProducts();
     private MakeOrder makeOrder = new MakeOrder();
+
+    @Autowired
+    @Qualifier("goToOrder")
+    private StateActionPair<Conversation> goToOrder;
+
+    @Autowired
+    @Qualifier("goToBuy")
+    private StateActionPair<Conversation> goToBuy;
 
     @Override
     public StateActionPair<Conversation> getStateActionPair(Conversation c, String event, Object... args) throws RetryException {
@@ -33,14 +40,14 @@ public class BuyTransition implements Transition<Conversation> {
             response = makeOrder.execute(request);
             c.addResponse(response);
 
-            return GO_TO_ORDER;
+            return goToOrder;
         } else {
 
             // call search product skill to get list of ASINs
             response = searchProducts.execute(request);
             c.addResponse(response);
 
-            return GO_TO_BUY;
+            return goToBuy;
         }
     }
 
