@@ -6,16 +6,18 @@ import org.springframework.stereotype.Component;
 import org.statefulj.fsm.RetryException;
 import org.statefulj.fsm.model.StateActionPair;
 import org.statefulj.fsm.model.Transition;
-import org.statefulj.fsm.model.impl.StateActionPairImpl;
+
+import static com.example.bot.spring.amazon.fsm.BotState.GO_TO_BUY;
+import static com.example.bot.spring.amazon.fsm.BotState.GO_TO_ORDER;
 
 @Component
 public class BuyTransition implements Transition<Conversation> {
     @Override
     public StateActionPair<Conversation> getStateActionPair(Conversation c, String event, Object... args) throws RetryException {
         if (isAsin(c.getLastInput())) {
-            return new StateActionPairImpl<>(BotState.ORDER, null);
+            return GO_TO_ORDER;
         } else {
-            return new StateActionPairImpl<>(BotState.BUY, null);
+            return GO_TO_BUY;
         }
     }
 
