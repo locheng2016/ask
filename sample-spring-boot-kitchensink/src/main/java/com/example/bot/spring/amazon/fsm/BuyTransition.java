@@ -7,8 +7,8 @@ import org.statefulj.fsm.RetryException;
 import org.statefulj.fsm.model.StateActionPair;
 import org.statefulj.fsm.model.Transition;
 
-import static com.example.bot.spring.amazon.fsm.BotState.GO_TO_BUY;
-import static com.example.bot.spring.amazon.fsm.BotState.GO_TO_ORDER;
+import static com.example.bot.spring.amazon.fsm.StateConstant.GO_TO_BUY;
+import static com.example.bot.spring.amazon.fsm.StateConstant.GO_TO_ORDER;
 
 @Component
 public class BuyTransition implements Transition<Conversation> {

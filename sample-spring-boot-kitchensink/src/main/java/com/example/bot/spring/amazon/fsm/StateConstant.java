@@ -9,7 +9,7 @@ import org.statefulj.fsm.model.impl.StateImpl;
 
 import java.util.List;
 
-class BotState {
+class StateConstant {
     static final State<Conversation> INIT = new StateImpl<>("INIT");
     static final State<Conversation> HELLO = new StateImpl<>("HELLO");
     static final State<Conversation> BUY = new StateImpl<>("BUY");

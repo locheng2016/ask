@@ -6,10 +6,20 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.statefulj.fsm.FSM;
+import org.statefulj.fsm.Persister;
 import org.statefulj.persistence.memory.MemoryPersisterImpl;
+
+import static com.example.bot.spring.amazon.fsm.StateConstant.ALL;
+import static com.example.bot.spring.amazon.fsm.StateConstant.BUY;
+import static com.example.bot.spring.amazon.fsm.StateConstant.HELLO;
+import static com.example.bot.spring.amazon.fsm.StateConstant.INIT;
+import static com.example.bot.spring.amazon.fsm.StateConstant.ORDER;
 
 @Component
 public class FiniteStateMachine {
+    private static final String USER_INPUT_EVENT = "USER_INPUT";
+    private static final Persister<Conversation> PERSISTER = new MemoryPersisterImpl<>(ALL, INIT);
+
     private FSM<Conversation> fsm;
 
     @Autowired
@@ -17,14 +27,15 @@ public class FiniteStateMachine {
             InitTransition initTransition,
             HelloTransition helloTransition,
             BuyTransition buyTransition) {
-        BotState.INIT.addTransition("userInput", initTransition);
-        BotState.HELLO.addTransition("userInput", helloTransition);
-        BotState.BUY.addTransition("userInput", buyTransition);
-        fsm = new FSM<>("FSM", new MemoryPersisterImpl<>(BotState.ALL, BotState.INIT));
+        INIT.addTransition(USER_INPUT_EVENT, initTransition);
+        HELLO.addTransition(USER_INPUT_EVENT, helloTransition);
+        BUY.addTransition(USER_INPUT_EVENT, buyTransition);
+        ORDER.addTransition(USER_INPUT_EVENT, INIT); // deterministic
+        fsm = new FSM<>("FSM", PERSISTER);
     }
 
     @SneakyThrows
     public void handleUserInput(@NonNull Conversation conversation) {
-        fsm.onEvent(conversation, "USER_INPUT");
+        fsm.onEvent(conversation, USER_INPUT_EVENT);
     }
 }

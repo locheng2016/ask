@@ -8,8 +8,8 @@ import org.statefulj.fsm.model.Transition;
 
 import java.util.Objects;
 
-import static com.example.bot.spring.amazon.fsm.BotState.GO_TO_BUY;
-import static com.example.bot.spring.amazon.fsm.BotState.GO_TO_HELLO;
+import static com.example.bot.spring.amazon.fsm.StateConstant.GO_TO_BUY;
+import static com.example.bot.spring.amazon.fsm.StateConstant.GO_TO_HELLO;
 
 @Component
 public class HelloTransition implements Transition<Conversation> {
