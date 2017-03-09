@@ -250,7 +250,7 @@ public class KitchenSinkController {
             String imageUrl = createUri("/static/buttons/1024.jpg");
             ButtonsTemplate buttonsTemplate = new ButtonsTemplate(
                     imageUrl,
-                    "",
+                    "Hi Amazon",
                     "What can I help you with?",
                     Arrays.asList(
                             new MessageAction("Want to buy?",
